@@ -1,0 +1,14 @@
+{
+  "name": "paicoop-browser-sdk",
+  "version": "0.0.1",
+  "description": "Browser sdk for PaiCoop.",
+  "main": "dist/paicoop.js",
+  "repository": "git@github.com:PaiCoop/browser-sdk.git",
+  "author": "IoTcat <i@iotcat.me>",
+  "license": "GUN",
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "gulp-rename": "^2.0.0",
+    "gulp-uglify": "^3.0.2"
+  }
+}
