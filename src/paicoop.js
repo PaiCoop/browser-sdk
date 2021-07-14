@@ -14,7 +14,7 @@
 	};
 
 	// Version
-	Paicoop.version = 'sdk0.0.1t';
+	Paicoop.version = 'sdk0.0.1';
 
 	// Utils
 	Paicoop.utils = {
@@ -90,7 +90,8 @@
 	// Options
 	Paicoop.options = Paicoop.utils.extend({
 		systemNamespace: '__PaiCoop',
-		customNamespace: '__Custom'
+		customNamespace: '__Custom',
+		host: 'http://cn3.yimian.xyz/api/'
 	}, window.Paicoop ? window.Paicooop.options : {});
 
 
@@ -315,24 +316,67 @@ let MASK = {
 			setOptions: function (options) {
 				this.options = Paicoop.utils.extend({}, this.options || Paicoop.options, options);
 			},
-			push: form => new Promise(async (resolve, reject) => {
+			push: function(form){ return new Promise(async (resolve, reject) => {
+				let res = {};
 				try{
-					let res = await formParser(form, MASK);
-					_db.set(res.userProfile.netid, JSON.stringify(res));
-					resolve(statusObj(0, 'Successful!'));
+					res = await formParser(form, MASK);
 				}catch(e){
 					reject(e);
 				}
-			}),
-			pull: netid => new Promise(resolve => {
-				resolve(netid && JSON.parse(_db.get(netid.toLowerCase())));
-			}),
-			reset: function () {
-				return _db.reset();
-			},
-			getList: () => new Promise(resolve => {
-				resolve(_generateList(_db.keys().map(netid=>JSON.parse(_db.get(netid)))));
-			})
+
+				if(Object.keys(res).length)
+				fetch(this.options.host + 'setForm', {
+				    method: 'POST',
+				    body: new URLSearchParams({
+				    	form: JSON.stringify(res)
+					})
+				})
+				.then(response=>response.json())
+				.then(myJson=>resolve(myJson))
+				.catch(e=>{
+					reject(statusObj(300, 'Cannot connect to host!'));
+				});
+
+			})},
+			pull: function(netid){return new Promise((resolve, reject) => {
+				fetch(this.options.host + 'getForm?netid='+netid)
+				.then(response=>response.json())
+				.then(myJson=>{
+					if(typeof myJson === 'object' && myJson.hasOwnProperty('status') && myJson.status === true && myJson.hasOwnProperty('data'))
+						resolve(myJson.data);
+					else
+						reject(myJson);
+				})
+				.catch(e=>{
+					reject(statusObj(300, 'Cannot connect to host!'));
+				});
+			})},
+			reset: function(){return new Promise((resolve, reject) => {
+				fetch(this.options.host + 'reset')
+				.then(response=>response.json())
+				.then(myJson=>{
+					if(typeof myJson === 'object' && myJson.hasOwnProperty('status') && myJson.status === true && myJson.hasOwnProperty('data'))
+						resolve(myJson.data);
+					else
+						reject(myJson);
+				})
+				.catch(e=>{
+					reject(statusObj(300, 'Cannot connect to host!'));
+				});
+			})},
+			getList: function(){return new Promise((resolve, reject) => {
+				fetch(this.options.host + 'getList')
+				.then(response=>response.json())
+				.then(myJson=>{
+					if(typeof myJson === 'object' && myJson.hasOwnProperty('status') && myJson.status === true && myJson.hasOwnProperty('data'))
+						resolve(myJson.data);
+					else
+						reject(myJson);
+				})
+				.catch(e=>{
+					reject(statusObj(300, 'Cannot connect to host!'));
+				});
+			})}
 		}
 	}
 
